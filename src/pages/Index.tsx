@@ -117,11 +117,11 @@ const Index = () => {
 
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'approved': return 'bg-blue-500';
-      case 'completed': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'pending': return 'bg-gradient-to-r from-yellow-500 to-orange-500';
+      case 'approved': return 'bg-gradient-to-r from-blue-500 to-cyan-500';
+      case 'completed': return 'bg-gradient-to-r from-green-500 to-emerald-500';
+      case 'rejected': return 'bg-gradient-to-r from-red-500 to-pink-500';
+      default: return 'bg-gradient-to-r from-gray-500 to-slate-500';
     }
   };
 
@@ -136,36 +136,42 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-10 animate-spin" style={{ animationDuration: '20s' }}></div>
+      </div>
       {/* Header */}
-      <header className="bg-black/30 backdrop-blur-md border-b border-purple-500/20">
+      <header className="bg-black/40 backdrop-blur-xl border-b border-purple-500/30 relative z-10 animate-fade-in">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Icon name="Gamepad2" className="text-purple-400" size={32} />
-              <h1 className="text-2xl font-bold text-white">SteamBoost</h1>
+            <div className="flex items-center space-x-2 group">
+              <Icon name="Gamepad2" className="text-purple-400 group-hover:text-purple-300 transition-colors duration-300 group-hover:scale-110 transform" size={32} />
+              <h1 className="text-2xl font-bold text-white group-hover:text-purple-200 transition-colors duration-300">SteamBoost</h1>
             </div>
             <nav className="flex items-center space-x-6">
-              <a href="#services" className="text-white hover:text-purple-400 transition-colors">Услуги</a>
-              <a href="#reviews" className="text-white hover:text-purple-400 transition-colors">Отзывы</a>
-              <a href="#support" className="text-white hover:text-purple-400 transition-colors">Поддержка</a>
+              <a href="#services" className="text-white hover:text-purple-400 transition-all duration-300 hover:scale-105 transform relative after:absolute after:w-0 after:h-0.5 after:bg-purple-400 after:left-0 after:-bottom-1 after:transition-all after:duration-300 hover:after:w-full">Услуги</a>
+              <a href="#reviews" className="text-white hover:text-purple-400 transition-all duration-300 hover:scale-105 transform relative after:absolute after:w-0 after:h-0.5 after:bg-purple-400 after:left-0 after:-bottom-1 after:transition-all after:duration-300 hover:after:w-full">Отзывы</a>
+              <a href="#support" className="text-white hover:text-purple-400 transition-all duration-300 hover:scale-105 transform relative after:absolute after:w-0 after:h-0.5 after:bg-purple-400 after:left-0 after:-bottom-1 after:transition-all after:duration-300 hover:after:w-full">Поддержка</a>
               
               {isLoggedIn ? (
-                <div className="flex items-center space-x-4">
-                  <span className="text-white">
+                <div className="flex items-center space-x-4 animate-fade-in">
+                  <span className="text-white bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1 rounded-full text-sm">
                     <Icon name="User" size={16} className="inline mr-1" />
                     {currentUser?.username}
                   </span>
-                  <Button onClick={handleLogout} variant="outline" className="border-purple-500 text-purple-400">
+                  <Button onClick={handleLogout} variant="outline" className="border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all duration-300 hover:scale-105 transform">
                     Выйти
                   </Button>
                 </div>
               ) : (
                 <div className="flex space-x-2">
-                  <Button onClick={() => setShowLoginDialog(true)} variant="outline" className="border-purple-500 text-purple-400">
+                  <Button onClick={() => setShowLoginDialog(true)} variant="outline" className="border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all duration-300 hover:scale-105 transform">
                     Вход
                   </Button>
-                  <Button onClick={() => setShowRegisterDialog(true)} className="bg-purple-600 hover:bg-purple-700">
+                  <Button onClick={() => setShowRegisterDialog(true)} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 transform hover:shadow-lg hover:shadow-purple-500/25">
                     Регистрация
                   </Button>
                 </div>
@@ -214,7 +220,7 @@ const Index = () => {
                 Для теста: admin/admin123 или user1/user123
               </AlertDescription>
             </Alert>
-            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 transform hover:shadow-lg hover:shadow-purple-500/25">
               Войти
             </Button>
           </form>
@@ -266,7 +272,7 @@ const Index = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+            <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 transform hover:shadow-lg hover:shadow-purple-500/25">
               Зарегистрироваться
             </Button>
           </form>
@@ -274,26 +280,26 @@ const Index = () => {
       </Dialog>
 
       {/* Hero Section */}
-      <section className="py-20 text-center">
+      <section className="py-20 text-center relative z-10">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-5xl font-bold text-white mb-6">
+            <h2 className="text-5xl font-bold text-white mb-6 animate-fade-in">
               Пополнение Steam
-              <span className="text-purple-400"> Быстро и Безопасно</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 animate-pulse"> Быстро и Безопасно</span>
             </h2>
-            <p className="text-xl text-gray-300 mb-8">
+            <p className="text-xl text-gray-300 mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               Пополняем Steam кошелёк за 5 минут. Работаем 24/7. Комиссия всего 5%
             </p>
-            <div className="flex justify-center space-x-4">
-              <Badge className="bg-green-500 text-white px-4 py-2">
+            <div className="flex justify-center space-x-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 hover:scale-105 transform transition-all duration-300 hover:shadow-lg hover:shadow-green-500/25">
                 <Icon name="Check" size={16} className="mr-2" />
                 Мгновенно
               </Badge>
-              <Badge className="bg-blue-500 text-white px-4 py-2">
+              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 hover:scale-105 transform transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25">
                 <Icon name="Shield" size={16} className="mr-2" />
                 Безопасно
               </Badge>
-              <Badge className="bg-orange-500 text-white px-4 py-2">
+              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 hover:scale-105 transform transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/25">
                 <Icon name="Zap" size={16} className="mr-2" />
                 Без комиссии
               </Badge>
@@ -303,25 +309,25 @@ const Index = () => {
       </section>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 relative z-10">
         <Tabs defaultValue="request" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="request">Заявка</TabsTrigger>
-            <TabsTrigger value="services">Услуги</TabsTrigger>
-            <TabsTrigger value="reviews">Отзывы</TabsTrigger>
-            <TabsTrigger value="cabinet" disabled={!isLoggedIn}>
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-slate-800/50 backdrop-blur-xl border border-purple-500/20 animate-fade-in">
+            <TabsTrigger value="request" className="hover:bg-purple-500/20 transition-all duration-300">Заявка</TabsTrigger>
+            <TabsTrigger value="services" className="hover:bg-purple-500/20 transition-all duration-300">Услуги</TabsTrigger>
+            <TabsTrigger value="reviews" className="hover:bg-purple-500/20 transition-all duration-300">Отзывы</TabsTrigger>
+            <TabsTrigger value="cabinet" disabled={!isLoggedIn} className="hover:bg-purple-500/20 transition-all duration-300">
               <Icon name="User" size={16} className="mr-2" />
               Кабинет
             </TabsTrigger>
-            <TabsTrigger value="admin" disabled={!isAdmin}>
+            <TabsTrigger value="admin" disabled={!isAdmin} className="hover:bg-purple-500/20 transition-all duration-300">
               <Icon name="Settings" size={16} className="mr-2" />
               Админ
             </TabsTrigger>
           </TabsList>
 
           {/* Request Form */}
-          <TabsContent value="request">
-            <Card className="max-w-2xl mx-auto bg-slate-800/50 backdrop-blur-sm border-purple-500/20">
+          <TabsContent value="request" className="animate-fade-in">
+            <Card className="max-w-2xl mx-auto bg-slate-800/50 backdrop-blur-xl border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 hover:scale-105 transform hover:shadow-2xl hover:shadow-purple-500/20">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Icon name="CreditCard" className="mr-2 text-purple-400" />
@@ -375,7 +381,7 @@ const Index = () => {
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+                    <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 transform hover:shadow-lg hover:shadow-purple-500/25">
                       <Icon name="Send" size={16} className="mr-2" />
                       Отправить заявку
                     </Button>
@@ -386,7 +392,7 @@ const Index = () => {
           </TabsContent>
 
           {/* Services */}
-          <TabsContent value="services">
+          <TabsContent value="services" className="animate-fade-in">
             <div className="grid md:grid-cols-3 gap-6">
               <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20">
                 <CardHeader>
@@ -433,7 +439,7 @@ const Index = () => {
           </TabsContent>
 
           {/* Reviews */}
-          <TabsContent value="reviews">
+          <TabsContent value="reviews" className="animate-fade-in">
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20">
                 <CardHeader>
@@ -490,7 +496,7 @@ const Index = () => {
           </TabsContent>
 
           {/* User Cabinet */}
-          <TabsContent value="cabinet">
+          <TabsContent value="cabinet" className="animate-fade-in">
             {isLoggedIn ? (
               <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20">
                 <CardHeader>
@@ -550,10 +556,10 @@ const Index = () => {
           </TabsContent>
 
           {/* Admin Panel */}
-          <TabsContent value="admin">
+          <TabsContent value="admin" className="animate-fade-in">
             {isAdmin ? (
               <div className="space-y-6">
-                <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20">
+                <Card className="bg-slate-800/50 backdrop-blur-xl border-purple-500/20 hover:border-purple-500/40 transition-all duration-300">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
                       <Icon name="Shield" className="mr-2 text-purple-400" />
@@ -632,30 +638,30 @@ const Index = () => {
       </div>
 
       {/* Support Section */}
-      <section id="support" className="py-16 bg-black/30">
+      <section id="support" className="py-16 bg-black/40 backdrop-blur-xl relative z-10">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 animate-fade-in">
             <h3 className="text-3xl font-bold text-white mb-4">Поддержка</h3>
             <p className="text-gray-300">Нужна помощь? Мы всегда на связи!</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20 text-center">
+            <Card className="bg-slate-800/50 backdrop-blur-xl border-purple-500/20 text-center hover:border-purple-500/40 transition-all duration-500 hover:scale-105 transform hover:shadow-2xl hover:shadow-purple-500/20 animate-fade-in">
               <CardContent className="p-6">
-                <Icon name="MessageCircle" className="mx-auto text-blue-400 mb-4" size={48} />
+                <Icon name="MessageCircle" className="mx-auto text-blue-400 mb-4 hover:scale-110 transition-transform duration-300" size={48} />
                 <h4 className="text-white font-semibold mb-2">Telegram</h4>
                 <p className="text-gray-300">@steamboost_support</p>
               </CardContent>
             </Card>
-            <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20 text-center">
+            <Card className="bg-slate-800/50 backdrop-blur-xl border-purple-500/20 text-center hover:border-purple-500/40 transition-all duration-500 hover:scale-105 transform hover:shadow-2xl hover:shadow-purple-500/20 animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <CardContent className="p-6">
-                <Icon name="Mail" className="mx-auto text-green-400 mb-4" size={48} />
+                <Icon name="Mail" className="mx-auto text-green-400 mb-4 hover:scale-110 transition-transform duration-300" size={48} />
                 <h4 className="text-white font-semibold mb-2">Email</h4>
                 <p className="text-gray-300">support@steamboost.ru</p>
               </CardContent>
             </Card>
-            <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20 text-center">
+            <Card className="bg-slate-800/50 backdrop-blur-xl border-purple-500/20 text-center hover:border-purple-500/40 transition-all duration-500 hover:scale-105 transform hover:shadow-2xl hover:shadow-purple-500/20 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <CardContent className="p-6">
-                <Icon name="Phone" className="mx-auto text-purple-400 mb-4" size={48} />
+                <Icon name="Phone" className="mx-auto text-purple-400 mb-4 hover:scale-110 transition-transform duration-300" size={48} />
                 <h4 className="text-white font-semibold mb-2">Телефон</h4>
                 <p className="text-gray-300">+7 (999) 123-45-67</p>
               </CardContent>
@@ -665,12 +671,12 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black/50 py-8">
+      <footer className="bg-black/60 backdrop-blur-xl py-8 relative z-10">
         <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <Icon name="Gamepad2" className="text-purple-400" size={24} />
-              <span className="text-white font-bold">SteamBoost</span>
+          <div className="text-center animate-fade-in">
+            <div className="flex items-center justify-center space-x-2 mb-4 group">
+              <Icon name="Gamepad2" className="text-purple-400 group-hover:text-purple-300 transition-colors duration-300 group-hover:scale-110 transform" size={24} />
+              <span className="text-white font-bold group-hover:text-purple-200 transition-colors duration-300">SteamBoost</span>
             </div>
             <p className="text-gray-400">© 2024 SteamBoost. Быстрое и безопасное пополнение Steam</p>
           </div>
