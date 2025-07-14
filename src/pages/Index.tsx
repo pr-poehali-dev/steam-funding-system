@@ -11,11 +11,29 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
+  // Auth states
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{username: string, role: string} | null>(null);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
+  
+  // Login/Register forms
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [registerForm, setRegisterForm] = useState({ username: '', password: '', confirmPassword: '' });
+  
+  // Mock users database (in real app would be backend)
+  const [users] = useState([
+    { username: 'admin', password: 'admin123', role: 'admin' },
+    { username: 'user1', password: 'user123', role: 'user' },
+    { username: 'client1', password: 'client123', role: 'user' }
+  ]);
+
+  // Requests state
   const [requests, setRequests] = useState([
-    { id: 1, steamLogin: 'player123', amount: 1000, contact: 'telegram: @player123', status: 'pending', date: '2024-01-15' },
-    { id: 2, steamLogin: 'gamer456', amount: 500, contact: 'email: gamer@mail.com', status: 'approved', date: '2024-01-14' },
-    { id: 3, steamLogin: 'user789', amount: 2000, contact: 'telegram: @user789', status: 'completed', date: '2024-01-13' }
+    { id: 1, steamLogin: 'player123', amount: 1000, contact: 'telegram: @player123', status: 'pending', date: '2024-01-15', userId: 'user1' },
+    { id: 2, steamLogin: 'gamer456', amount: 500, contact: 'email: gamer@mail.com', status: 'approved', date: '2024-01-14', userId: 'client1' },
+    { id: 3, steamLogin: 'user789', amount: 2000, contact: 'telegram: @user789', status: 'completed', date: '2024-01-13', userId: 'user1' }
   ]);
 
   const [newRequest, setNewRequest] = useState({
@@ -24,14 +42,64 @@ const Index = () => {
     contact: ''
   });
 
+  // Auth handlers
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const user = users.find(u => u.username === loginForm.username && u.password === loginForm.password);
+    if (user) {
+      setIsLoggedIn(true);
+      setIsAdmin(user.role === 'admin');
+      setCurrentUser({ username: user.username, role: user.role });
+      setShowLoginDialog(false);
+      setLoginForm({ username: '', password: '' });
+    } else {
+      alert('Неверный логин или пароль');
+    }
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (registerForm.password !== registerForm.confirmPassword) {
+      alert('Пароли не совпадают');
+      return;
+    }
+    if (users.find(u => u.username === registerForm.username)) {
+      alert('Пользователь уже существует');
+      return;
+    }
+    
+    // In real app would save to backend
+    const newUser = { username: registerForm.username, password: registerForm.password, role: 'user' };
+    users.push(newUser);
+    
+    setIsLoggedIn(true);
+    setIsAdmin(false);
+    setCurrentUser({ username: newUser.username, role: newUser.role });
+    setShowRegisterDialog(false);
+    setRegisterForm({ username: '', password: '', confirmPassword: '' });
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setIsAdmin(false);
+    setCurrentUser(null);
+  };
+
+  // Request handlers
   const handleSubmitRequest = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLoggedIn) {
+      alert('Для создания заявки необходимо войти в систему');
+      return;
+    }
+    
     const request = {
       id: requests.length + 1,
       ...newRequest,
       amount: parseInt(newRequest.amount),
       status: 'pending' as const,
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      userId: currentUser?.username || ''
     };
     setRequests([...requests, request]);
     setNewRequest({ steamLogin: '', amount: '', contact: '' });
@@ -41,6 +109,10 @@ const Index = () => {
     setRequests(requests.map(req => 
       req.id === id ? { ...req, status } : req
     ));
+  };
+
+  const getUserRequests = () => {
+    return requests.filter(req => req.userId === currentUser?.username);
   };
 
   const getStatusColor = (status: string) => {
@@ -77,18 +149,129 @@ const Index = () => {
               <a href="#services" className="text-white hover:text-purple-400 transition-colors">Услуги</a>
               <a href="#reviews" className="text-white hover:text-purple-400 transition-colors">Отзывы</a>
               <a href="#support" className="text-white hover:text-purple-400 transition-colors">Поддержка</a>
-              <Button
-                variant={isAdmin ? "default" : "outline"}
-                onClick={() => setIsAdmin(!isAdmin)}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                <Icon name="Shield" size={16} className="mr-2" />
-                {isAdmin ? 'Выйти' : 'Админ'}
-              </Button>
+              
+              {isLoggedIn ? (
+                <div className="flex items-center space-x-4">
+                  <span className="text-white">
+                    <Icon name="User" size={16} className="inline mr-1" />
+                    {currentUser?.username}
+                  </span>
+                  <Button onClick={handleLogout} variant="outline" className="border-purple-500 text-purple-400">
+                    Выйти
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex space-x-2">
+                  <Button onClick={() => setShowLoginDialog(true)} variant="outline" className="border-purple-500 text-purple-400">
+                    Вход
+                  </Button>
+                  <Button onClick={() => setShowRegisterDialog(true)} className="bg-purple-600 hover:bg-purple-700">
+                    Регистрация
+                  </Button>
+                </div>
+              )}
             </nav>
           </div>
         </div>
       </header>
+
+      {/* Login Dialog */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="bg-slate-800 border-purple-500/20">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center">
+              <Icon name="LogIn" className="mr-2 text-purple-400" />
+              Вход в систему
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <Label htmlFor="login-username" className="text-white">Логин</Label>
+              <Input
+                id="login-username"
+                value={loginForm.username}
+                onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                placeholder="Введите логин"
+                className="bg-slate-700 border-slate-600 text-white"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="login-password" className="text-white">Пароль</Label>
+              <Input
+                id="login-password"
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                placeholder="Введите пароль"
+                className="bg-slate-700 border-slate-600 text-white"
+                required
+              />
+            </div>
+            <Alert className="bg-slate-700/50 border-purple-500/20">
+              <Icon name="Info" className="h-4 w-4 text-purple-400" />
+              <AlertDescription className="text-gray-300">
+                Для теста: admin/admin123 или user1/user123
+              </AlertDescription>
+            </Alert>
+            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+              Войти
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Register Dialog */}
+      <Dialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
+        <DialogContent className="bg-slate-800 border-purple-500/20">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center">
+              <Icon name="UserPlus" className="mr-2 text-purple-400" />
+              Регистрация
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div>
+              <Label htmlFor="register-username" className="text-white">Логин</Label>
+              <Input
+                id="register-username"
+                value={registerForm.username}
+                onChange={(e) => setRegisterForm({...registerForm, username: e.target.value})}
+                placeholder="Выберите логин"
+                className="bg-slate-700 border-slate-600 text-white"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="register-password" className="text-white">Пароль</Label>
+              <Input
+                id="register-password"
+                type="password"
+                value={registerForm.password}
+                onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                placeholder="Придумайте пароль"
+                className="bg-slate-700 border-slate-600 text-white"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="register-confirm" className="text-white">Повторите пароль</Label>
+              <Input
+                id="register-confirm"
+                type="password"
+                value={registerForm.confirmPassword}
+                onChange={(e) => setRegisterForm({...registerForm, confirmPassword: e.target.value})}
+                placeholder="Повторите пароль"
+                className="bg-slate-700 border-slate-600 text-white"
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+              Зарегистрироваться
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Hero Section */}
       <section className="py-20 text-center">
@@ -121,12 +304,16 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
-        <Tabs defaultValue={isAdmin ? "admin" : "request"} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+        <Tabs defaultValue="request" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="request">Заявка</TabsTrigger>
             <TabsTrigger value="services">Услуги</TabsTrigger>
             <TabsTrigger value="reviews">Отзывы</TabsTrigger>
-            <TabsTrigger value="admin">
+            <TabsTrigger value="cabinet" disabled={!isLoggedIn}>
+              <Icon name="User" size={16} className="mr-2" />
+              Кабинет
+            </TabsTrigger>
+            <TabsTrigger value="admin" disabled={!isAdmin}>
               <Icon name="Settings" size={16} className="mr-2" />
               Админ
             </TabsTrigger>
@@ -145,46 +332,55 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmitRequest} className="space-y-4">
-                  <div>
-                    <Label htmlFor="steamLogin" className="text-white">Steam логин</Label>
-                    <Input
-                      id="steamLogin"
-                      value={newRequest.steamLogin}
-                      onChange={(e) => setNewRequest({...newRequest, steamLogin: e.target.value})}
-                      placeholder="Введите ваш Steam логин"
-                      className="bg-slate-700 border-slate-600 text-white"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="amount" className="text-white">Сумма пополнения (руб.)</Label>
-                    <Input
-                      id="amount"
-                      type="number"
-                      value={newRequest.amount}
-                      onChange={(e) => setNewRequest({...newRequest, amount: e.target.value})}
-                      placeholder="1000"
-                      className="bg-slate-700 border-slate-600 text-white"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="contact" className="text-white">Контакты</Label>
-                    <Textarea
-                      id="contact"
-                      value={newRequest.contact}
-                      onChange={(e) => setNewRequest({...newRequest, contact: e.target.value})}
-                      placeholder="Telegram: @username или email"
-                      className="bg-slate-700 border-slate-600 text-white"
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
-                    <Icon name="Send" size={16} className="mr-2" />
-                    Отправить заявку
-                  </Button>
-                </form>
+                {!isLoggedIn ? (
+                  <Alert className="bg-slate-700/50 border-purple-500/20">
+                    <Icon name="Lock" className="h-4 w-4 text-purple-400" />
+                    <AlertDescription className="text-gray-300">
+                      Для создания заявки необходимо войти в систему или зарегистрироваться
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <form onSubmit={handleSubmitRequest} className="space-y-4">
+                    <div>
+                      <Label htmlFor="steamLogin" className="text-white">Steam логин</Label>
+                      <Input
+                        id="steamLogin"
+                        value={newRequest.steamLogin}
+                        onChange={(e) => setNewRequest({...newRequest, steamLogin: e.target.value})}
+                        placeholder="Введите ваш Steam логин"
+                        className="bg-slate-700 border-slate-600 text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="amount" className="text-white">Сумма пополнения (руб.)</Label>
+                      <Input
+                        id="amount"
+                        type="number"
+                        value={newRequest.amount}
+                        onChange={(e) => setNewRequest({...newRequest, amount: e.target.value})}
+                        placeholder="1000"
+                        className="bg-slate-700 border-slate-600 text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="contact" className="text-white">Контакты</Label>
+                      <Textarea
+                        id="contact"
+                        value={newRequest.contact}
+                        onChange={(e) => setNewRequest({...newRequest, contact: e.target.value})}
+                        placeholder="Telegram: @username или email"
+                        className="bg-slate-700 border-slate-600 text-white"
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+                      <Icon name="Send" size={16} className="mr-2" />
+                      Отправить заявку
+                    </Button>
+                  </form>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -293,6 +489,66 @@ const Index = () => {
             </div>
           </TabsContent>
 
+          {/* User Cabinet */}
+          <TabsContent value="cabinet">
+            {isLoggedIn ? (
+              <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Icon name="User" className="mr-2 text-purple-400" />
+                    Личный кабинет
+                  </CardTitle>
+                  <CardDescription className="text-gray-300">
+                    Ваши заявки на пополнение Steam
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {getUserRequests().length === 0 ? (
+                      <Alert className="bg-slate-700/50 border-purple-500/20">
+                        <Icon name="Info" className="h-4 w-4 text-purple-400" />
+                        <AlertDescription className="text-gray-300">
+                          У вас пока нет заявок. Создайте первую заявку во вкладке "Заявка"
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      getUserRequests().map((request) => (
+                        <Card key={request.id} className="bg-slate-700/50 border-slate-600">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="flex items-center space-x-4">
+                                  <div>
+                                    <p className="text-white font-semibold">{request.steamLogin}</p>
+                                    <p className="text-gray-400 text-sm">{request.contact}</p>
+                                  </div>
+                                  <Badge className={getStatusColor(request.status)}>
+                                    {getStatusText(request.status)}
+                                  </Badge>
+                                </div>
+                                <div className="mt-2 flex items-center space-x-4">
+                                  <span className="text-green-400 font-bold">{request.amount} руб.</span>
+                                  <span className="text-gray-400 text-sm">{request.date}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Alert className="bg-slate-800/50 border-purple-500/20">
+                <Icon name="Lock" className="h-4 w-4 text-purple-400" />
+                <AlertDescription className="text-gray-300">
+                  Для доступа к личному кабинету необходимо войти в систему
+                </AlertDescription>
+              </Alert>
+            )}
+          </TabsContent>
+
           {/* Admin Panel */}
           <TabsContent value="admin">
             {isAdmin ? (
@@ -300,11 +556,11 @@ const Index = () => {
                 <Card className="bg-slate-800/50 backdrop-blur-sm border-purple-500/20">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
-                      <Icon name="Users" className="mr-2 text-purple-400" />
+                      <Icon name="Shield" className="mr-2 text-purple-400" />
                       Панель администратора
                     </CardTitle>
                     <CardDescription className="text-gray-300">
-                      Управление заявками на пополнение
+                      Управление всеми заявками на пополнение
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -318,6 +574,7 @@ const Index = () => {
                                   <div>
                                     <p className="text-white font-semibold">{request.steamLogin}</p>
                                     <p className="text-gray-400 text-sm">{request.contact}</p>
+                                    <p className="text-gray-500 text-xs">Пользователь: {request.userId}</p>
                                   </div>
                                   <Badge className={getStatusColor(request.status)}>
                                     {getStatusText(request.status)}
@@ -366,7 +623,7 @@ const Index = () => {
               <Alert className="bg-slate-800/50 border-purple-500/20">
                 <Icon name="Lock" className="h-4 w-4 text-purple-400" />
                 <AlertDescription className="text-gray-300">
-                  Для доступа к админ-панели нажмите кнопку "Админ" в шапке сайта
+                  Доступ к админ-панели имеют только администраторы
                 </AlertDescription>
               </Alert>
             )}
